@@ -1,0 +1,4 @@
+repo_path: blog_project
+input_goal: |
+  Refactor the blog project to use a more modular structure.  Maybe use nextjs.
+include_files: true

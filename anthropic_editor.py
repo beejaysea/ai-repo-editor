@@ -4,18 +4,21 @@ import yaml
 import sys
 from anthropic.types.beta import BetaTextBlock, BetaToolUseBlock
 from tools.text_edit_tools import TextEditTools
+import readline
 
 load_dotenv()
 
 client = anthropic.Anthropic()
+global_history = []
 
 def process_goal(input_goal, start_dir='.'):
     tools = TextEditTools(start_dir)
     files = tools.list_directory('.', 6)
     system_prompt = open("system_prompt.txt", "r").read()
-    message_history = [
-        {"role": "user", "content": input_goal}
-        ]
+    input_goal_message = {"role": "user", "content": input_goal}
+
+    global_history.append(input_goal_message)
+    message_history = global_history.copy()
 
     done = False
     while not done:
@@ -61,6 +64,7 @@ def process_goal(input_goal, start_dir='.'):
             print("Stopped: ", response.stop_reason)
             print(response.content[0].text)
             done = True
+            global_history.append( {"role": "assistant", "content": response.content[0].text} )
 
 def main():
     config_path = sys.argv[1] if len(sys.argv) > 1 else 'config.yaml'
@@ -79,8 +83,15 @@ Here's a list of the existing files in the project:
 
 Review the existing files and create or update files as needed to implement the site.
 """
-
+    # chat loop
     process_goal(input_goal, repo_path)
+    user_quit = False
+    while not user_quit:
+        user_input = input("> ")
+        if user_input == "/quit":
+            user_quit = True
+        else:
+            process_goal(user_input, repo_path)
 
 if __name__ == "__main__":
     main()
