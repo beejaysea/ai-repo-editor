@@ -1,4 +1,4 @@
 repo_path: chat_ui
 input_goal: |
-  Use NextJS and ShadCN to build a modern chat UI suitable for interacting with an advanced AI.
+  Use NextJS to build a modern chat UI suitable for interacting with an advanced AI.
 include_files: true
