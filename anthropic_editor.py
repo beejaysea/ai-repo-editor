@@ -18,6 +18,7 @@ message_history = [{"role": "user", "content": input_goal}]
 
 done = False
 while not done:
+    print(message_history)
     response = client.beta.messages.create(
         model="claude-3-5-sonnet-20241022",
         max_tokens=4095,
@@ -43,12 +44,15 @@ while not done:
     )
     if response.stop_reason=='tool_use':
         messages = response.content
+        content = []
         for message in messages:
             if isinstance(message, BetaTextBlock):
-                output = message.text
-                print(output)
+                content.append({"type": "text", "text": message.text})
+                print(message.text)
             if isinstance(message, BetaToolUseBlock):
                 tool_input = message.input
+                content.append({"type": "tool_use", "id": message.id, "name": message.name, "input": tool_input})
+                message_history.append({"role": "assistant", "content": content})
                 command = tool_input['command']
                 if command == 'view':
                     result = view(tool_input['path'], tool_input.get('view_range'))
@@ -60,6 +64,7 @@ while not done:
                     result = insert(tool_input['path'], tool_input['insert_line'], tool_input['new_str'])
                 elif command == 'undo_edit':
                     result = undo_edit(tool_input['path'])
+                message_history.append({"role": "user", "content": [{"type": "tool_result", "tool_use_id": message.id, "content": result}]})
                 print(result)
 
     if response.stop_reason in ['end_turn', 'max_tokens', 'stop_sequence']:
