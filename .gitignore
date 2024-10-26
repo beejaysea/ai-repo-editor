@@ -35,3 +35,4 @@ ENV/
 work_dir/
 
 .venv/
+.env
