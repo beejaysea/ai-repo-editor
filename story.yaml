@@ -1,0 +1,4 @@
+repo_path: short_story
+input_goal: |
+  We are telling a short story with 3 chapters about a happy dog that meets an intelligent AI.
+include_files: true
