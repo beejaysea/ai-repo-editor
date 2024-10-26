@@ -16,6 +16,7 @@ def process_goal(input_goal):
         # print(message_history)
         response = client.beta.messages.create(
             model="claude-3-5-sonnet-20241022",
+            max_tokens=4095,
             tools=[
                 {
                 "type": "text_editor_20241022",
