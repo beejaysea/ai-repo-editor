@@ -45,15 +45,19 @@ def list_directory(path, depth):
     if not _is_path_allowed(path):
         return "Error: Path must be within ./work_dir"
     result = []
+    work_dir_prefix = os.path.join(os.getcwd(), 'work_dir') + os.sep
+
     def helper(current_path, current_depth):
         if current_depth > depth:
             return
         for item in os.listdir(current_path):
             if not item.startswith('.'):
                 full_path = os.path.join(current_path, item)
-                result.append(full_path)
+                relative_path = full_path[len(work_dir_prefix):]
+                result.append(relative_path)
                 if os.path.isdir(full_path):
                     helper(full_path, current_depth + 1)
+
     helper(path, 1)
     return '\n'.join(result)
 

@@ -9,14 +9,22 @@ client = anthropic.Anthropic()
 
 files = list_directory('.', 6)
 
-input_goal=f"""Generate a well-structured architecture for a new software project.
-The project is a web application that allows users to create and share documents.
-The application should have a user-friendly interface that allows users to easily create, edit, and share documents.
-The application should also have a robust backend that can handle a large number of users and documents.
-Create an architecture doc, and the first couple of code files for a working example.
+input_goal=f"""Our project is a brochure site for a boutique software development firm specializing in AI.
+The landing page should include the following sections:
+- A hero section with a title and a brief description of the company
+- A section with a list of services offered
+- A section with a list of projects completed
+- A contact form
+- A footer with contact information
+- A navigation bar with links to each section
+- A case studies page
+- A pricing page
+- An about page
 
 Here's a list of the existing files in the project:
 {files}
+
+Review the existing files and create or update files as needed to implement the site.
 """
 
 message_history = [{"role": "user", "content": input_goal}]
@@ -26,23 +34,11 @@ while not done:
     # print(message_history)
     response = client.beta.messages.create(
         model="claude-3-5-sonnet-20241022",
-        max_tokens=4095,
         tools=[
-            # {
-            #   "type": "computer_20241022",
-            #   "name": "computer",
-            #   "display_width_px": 1024,
-            #   "display_height_px": 768,
-            #   "display_number": 1,
-            # },
             {
             "type": "text_editor_20241022",
             "name": "str_replace_editor"
             },
-            # {
-            #   "type": "bash_20241022",
-            #   "name": "bash"
-            # }
         ],
         messages=message_history,
         betas=["computer-use-2024-10-22"],
