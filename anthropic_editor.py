@@ -1,5 +1,7 @@
 import anthropic
 from dotenv import load_dotenv
+import yaml
+import sys
 from anthropic.types.beta import BetaTextBlock, BetaToolUseBlock
 from tools.text_edit_tools import TextEditTools
 
@@ -60,11 +62,17 @@ def process_goal(input_goal, start_dir='.'):
             print(response.content[0].text)
             done = True
 
-repo_path='blog_project'
+def main():
+    config_path = sys.argv[1] if len(sys.argv) > 1 else 'config.yaml'
+    
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
 
-input_goal=f"""Our project is a simple blog with a home page and a few blog posts.
-Make sure we have 5 posts about different topics.
+    repo_path = config['repo_path']
+    input_goal = config['input_goal']
 
+    if config.get('include_files', True):
+        input_goal += f"""
 
 Here's a list of the existing files in the project:
 {TextEditTools(repo_path).list_directory('.', 6)}
@@ -72,4 +80,7 @@ Here's a list of the existing files in the project:
 Review the existing files and create or update files as needed to implement the site.
 """
 
-process_goal(input_goal, repo_path)
+    process_goal(input_goal, repo_path)
+
+if __name__ == "__main__":
+    main()

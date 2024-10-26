@@ -1,0 +1,5 @@
+repo_path: blog_project
+input_goal: |
+  Our project is a simple blog with a home page and a few blog posts.
+  Make sure we have 5 posts about different topics.
+include_files: true
