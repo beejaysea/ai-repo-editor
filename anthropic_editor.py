@@ -1,17 +1,22 @@
 import anthropic
 from dotenv import load_dotenv
 from anthropic.types.beta import BetaTextBlock, BetaToolUseBlock
-from tools.text_edit_tools import view, create, str_replace, insert, undo_edit
+from tools.text_edit_tools import list_directory, view, create, str_replace, insert, undo_edit
 
 load_dotenv()
 
 client = anthropic.Anthropic()
 
-input_goal="""Generate a well-structured architecture for a new software project.
+files = list_directory('.', 2)
+
+input_goal=f"""Generate a well-structured architecture for a new software project.
 The project is a web application that allows users to create and share documents.
 The application should have a user-friendly interface that allows users to easily create, edit, and share documents.
 The application should also have a robust backend that can handle a large number of users and documents.
-Always create ARCHITECTURE.md first.
+Create an architecture doc, and the first couple of code files for a working example.
+
+Here's a list of the existing files in the project:
+{files}
 """
 
 message_history = [{"role": "user", "content": input_goal}]
