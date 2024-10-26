@@ -10,12 +10,16 @@ client = anthropic.Anthropic()
 def process_goal(input_goal, start_dir='.'):
     tools = TextEditTools(start_dir)
     files = tools.list_directory('.', 6)
-    message_history = [{"role": "user", "content": input_goal}]
+    system_prompt = open("system_prompt.txt", "r").read()
+    message_history = [
+        {"role": "user", "content": input_goal}
+        ]
 
     done = False
     while not done:
         response = client.beta.messages.create(
             model="claude-3-5-sonnet-20241022",
+            system=system_prompt,
             max_tokens=4095,
             tools=[
                 {
@@ -55,6 +59,8 @@ def process_goal(input_goal, start_dir='.'):
             print("Stopped: ", response.stop_reason)
             print(response.content[0].text)
             done = True
+
+repo_path='website'
 
 input_goal=f"""Our project is a brochure site for a boutique software development firm specializing in AI.
 The landing page should include the following sections:

@@ -1,0 +1,4 @@
+Always work toward the goal that the user specifies.
+Ensure that there is a project-spec.md in the project that explains the functionality from a product manager's perspective.
+Ensure that there is an architecutre.md int the project that explains the implementation from a technical lead's perspective.
+Alawys reference the existing project-spec and architecutre to ensure consistency.

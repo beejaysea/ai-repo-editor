@@ -6,17 +6,22 @@ class TextEditTools:
         self.file_histories = {}
 
     def _normalize_path(self, path):
-        return os.path.join('work_dir', self.directory, path.lstrip('/'))
+        clean_path = path.replace('/repo/', '/', 1)
+        return os.path.join('work_dir', self.directory, clean_path.lstrip('/'))
 
     def _is_path_allowed(self, path):
         work_dir = os.path.join(os.getcwd(), 'work_dir', self.directory)
         abs_path = os.path.abspath(path)
         return abs_path.startswith(work_dir)
 
+    def _denormalize_path(self, path):
+        work_dir_prefix = os.path.join('work_dir', self.directory)
+        return '/repo/' + path.replace(work_dir_prefix + os.sep, '', 1)
+
     def view(self, path, view_range=None, truncate_length=None):
         path = self._normalize_path(path)
         if not self._is_path_allowed(path):
-            return "Error: Path must be within ./work_dir"
+            return "Error: Invalid path"
         if os.path.isfile(path):
             with open(path, 'r') as f:
                 lines = f.readlines()
@@ -34,7 +39,7 @@ class TextEditTools:
         elif os.path.isdir(path):
             output = self.list_directory(path, depth=2)
         else:
-            output = f"Error: Path {path} does not exist."
+            output = f"Error: Path does not exist"
 
         if truncate_length and len(output) > truncate_length:
             output = output[:truncate_length] + '\n<response clipped>'
@@ -43,7 +48,7 @@ class TextEditTools:
     def list_directory(self, path, depth):
         path = self._normalize_path(path)
         if not self._is_path_allowed(path):
-            return "Error: Path must be within ./work_dir"
+            return "Error: Invalid path"
         result = []
         work_dir_prefix = os.path.join(os.getcwd(), 'work_dir', self.directory) + os.sep
         if not os.path.exists(path):
@@ -54,7 +59,7 @@ class TextEditTools:
             for item in os.listdir(current_path):
                 if not item.startswith('.'):
                     full_path = os.path.join(current_path, item)
-                    relative_path = full_path[len(work_dir_prefix):]
+                    relative_path = '/repo/' + full_path[len(work_dir_prefix):]
                     result.append(relative_path)
                     if os.path.isdir(full_path):
                         helper(full_path, current_depth + 1)
@@ -65,25 +70,25 @@ class TextEditTools:
     def create(self, path, file_text):
         path = self._normalize_path(path)
         if not self._is_path_allowed(path):
-            return "Error: Path must be within ./work_dir"
+            return "Error: Invalid path"
         if os.path.exists(path):
             if os.path.isfile(path):
-                return f"Error: File {path} already exists."
+                return "Error: File already exists"
             else:
-                return f"Error: Path {path} exists and is not a file."
+                return "Error: Path exists and is not a file"
         else:
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, 'w') as f:
                 f.write(file_text)
             self.file_histories[path] = [file_text]
-            return f"File {path} created."
+            return f"File created at {self._denormalize_path(path)}"
 
     def str_replace(self, path, old_str, new_str):
         path = self._normalize_path(path)
         if not self._is_path_allowed(path):
-            return "Error: Path must be within ./work_dir"
+            return "Error: Invalid path"
         if not os.path.isfile(path):
-            return f"Error: File {path} does not exist."
+            return "Error: File does not exist"
 
         with open(path, 'r') as f:
             lines = f.readlines()
@@ -96,9 +101,9 @@ class TextEditTools:
                 matches.append(i)
 
         if len(matches) == 0:
-            return "Error: old_str not found in file."
+            return "Error: old_str not found in file"
         elif len(matches) > 1:
-            return "Error: old_str is not unique in file."
+            return "Error: old_str is not unique in file"
         else:
             idx = matches[0]
             new_content_lines = lines[:idx] + new_lines + lines[idx + len(old_lines):]
@@ -109,19 +114,19 @@ class TextEditTools:
                 self.file_histories[path] = [''.join(lines)]
             with open(path, 'w') as f:
                 f.write(new_content)
-            return f"Replaced old_str in {path}."
+            return f"Replaced text in {self._denormalize_path(path)}"
 
     def insert(self, path, insert_line, new_str):
         path = self._normalize_path(path)
         if not self._is_path_allowed(path):
-            return "Error: Path must be within ./work_dir"
+            return "Error: Invalid path"
         if not os.path.isfile(path):
-            return f"Error: File {path} does not exist."
+            return "Error: File does not exist"
 
         with open(path, 'r') as f:
             lines = f.readlines()
         if insert_line < 1 or insert_line > len(lines):
-            return "Error: insert_line is out of range."
+            return "Error: insert_line is out of range"
 
         insert_idx = insert_line
         new_lines = new_str.splitlines(keepends=True)
@@ -133,16 +138,16 @@ class TextEditTools:
             self.file_histories[path] = [''.join(lines)]
         with open(path, 'w') as f:
             f.write(new_content)
-        return f"Inserted new_str into {path} after line {insert_line}."
+        return f"Inserted text into {self._denormalize_path(path)} after line {insert_line}"
 
     def undo_edit(self, path):
         path = self._normalize_path(path)
         if not self._is_path_allowed(path):
-            return "Error: Path must be within ./work_dir"
+            return "Error: Invalid path"
         if path not in self.file_histories or len(self.file_histories[path]) == 0:
-            return f"No edits to undo for {path}."
+            return "No edits to undo"
         else:
             last_content = self.file_histories[path].pop()
             with open(path, 'w') as f:
                 f.write(last_content)
-            return f"Last edit to {path} has been undone."
+            return f"Last edit to {self._denormalize_path(path)} has been undone"
