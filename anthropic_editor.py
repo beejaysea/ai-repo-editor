@@ -28,9 +28,23 @@ def process_goal(input_goal, start_dir='.'):
             max_tokens=4095,
             tools=[
                 {
-                "type": "text_editor_20241022",
-                "name": "str_replace_editor"
+                    "type": "text_editor_20241022",
+                    "name": "str_replace_editor"
                 },
+                {
+                    "name": "file_delete",
+                    "description": "Delete a file",
+                    "input_schema": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path to the file to delete"
+                            }
+                        },
+                        "required": ["path"],
+                    },
+                }
             ],
             messages=message_history,
             betas=["computer-use-2024-10-22"],
@@ -46,17 +60,20 @@ def process_goal(input_goal, start_dir='.'):
                     tool_input = message.input
                     content.append({"type": "tool_use", "id": message.id, "name": message.name, "input": tool_input})
                     message_history.append({"role": "assistant", "content": content})
-                    command = tool_input['command']
-                    if command == 'view':
-                        result = tools.view(tool_input['path'], tool_input.get('view_range'))
-                    elif command == 'create':
-                        result = tools.create(tool_input['path'], tool_input['file_text'])
-                    elif command == 'str_replace':
-                        result = tools.str_replace(tool_input['path'], tool_input['old_str'], tool_input['new_str'])
-                    elif command == 'insert':
-                        result = tools.insert(tool_input['path'], tool_input['insert_line'], tool_input['new_str'])
-                    elif command == 'undo_edit':
-                        result = tools.undo_edit(tool_input['path'])
+                    if message.name == "file_delete":
+                        result = tools.delete(tool_input['path'])
+                    else:
+                        command = tool_input['command']
+                        if command == 'view':
+                            result = tools.view(tool_input['path'], tool_input.get('view_range'))
+                        elif command == 'create':
+                            result = tools.create(tool_input['path'], tool_input['file_text'])
+                        elif command == 'str_replace':
+                            result = tools.str_replace(tool_input['path'], tool_input['old_str'], tool_input['new_str'])
+                        elif command == 'insert':
+                            result = tools.insert(tool_input['path'], tool_input['insert_line'], tool_input['new_str'])
+                        elif command == 'undo_edit':
+                            result = tools.undo_edit(tool_input['path'])
                     message_history.append({"role": "user", "content": [{"type": "tool_result", "tool_use_id": message.id, "content": result}]})
                     print(result)
 

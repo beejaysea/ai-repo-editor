@@ -73,7 +73,7 @@ class TextEditTools:
             return "Error: Invalid path"
         if os.path.exists(path):
             if os.path.isfile(path):
-                return "Error: File already exists"
+                return "Error: File already exists: " + self._denormalize_path(path)
             else:
                 return "Error: Path exists and is not a file"
         else:
@@ -88,7 +88,7 @@ class TextEditTools:
         if not self._is_path_allowed(path):
             return "Error: Invalid path"
         if not os.path.isfile(path):
-            return "Error: File does not exist"
+            return "Error: File does not exist ", path
 
         with open(path, 'r') as f:
             lines = f.readlines()
@@ -121,7 +121,7 @@ class TextEditTools:
         if not self._is_path_allowed(path):
             return "Error: Invalid path"
         if not os.path.isfile(path):
-            return "Error: File does not exist"
+            return "Error: File does not exist ", path
 
         with open(path, 'r') as f:
             lines = f.readlines()
@@ -151,3 +151,14 @@ class TextEditTools:
             with open(path, 'w') as f:
                 f.write(last_content)
             return f"Last edit to {self._denormalize_path(path)} has been undone"
+
+    def delete(self, path):
+        path = self._normalize_path(path)
+        if not self._is_path_allowed(path):
+            return "Error: Invalid path ", path
+        if not os.path.exists(path):
+            return "Error: File does not exist ", path
+        if os.path.isdir(path):
+            return "Error: Cannot delete directories"
+        os.remove(path)
+        return f"Deleted file {self._denormalize_path(path)}"
