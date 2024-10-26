@@ -1,4 +1,4 @@
-# Anthropic Editor
+# AI Repo Editor
 
 A Python-based text editor tool that leverages Anthropic's Claude-3 API for AI-powered file manipulation and code generation.
 
