@@ -1,19 +1,19 @@
 import anthropic
 from dotenv import load_dotenv
 from anthropic.types.beta import BetaTextBlock, BetaToolUseBlock
-from tools.text_edit_tools import list_directory, view, create, str_replace, insert, undo_edit
+from tools.text_edit_tools import TextEditTools
 
 load_dotenv()
 
 client = anthropic.Anthropic()
 
 def process_goal(input_goal, start_dir='.'):
-    files = list_directory(start_dir, 6)
+    tools = TextEditTools(start_dir)
+    files = tools.list_directory('.', 6)
     message_history = [{"role": "user", "content": input_goal}]
 
     done = False
     while not done:
-        # print(message_history)
         response = client.beta.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=4095,
@@ -39,15 +39,15 @@ def process_goal(input_goal, start_dir='.'):
                     message_history.append({"role": "assistant", "content": content})
                     command = tool_input['command']
                     if command == 'view':
-                        result = view(tool_input['path'], tool_input.get('view_range'))
+                        result = tools.view(tool_input['path'], tool_input.get('view_range'))
                     elif command == 'create':
-                        result = create(tool_input['path'], tool_input['file_text'])
+                        result = tools.create(tool_input['path'], tool_input['file_text'])
                     elif command == 'str_replace':
-                        result = str_replace(tool_input['path'], tool_input['old_str'], tool_input['new_str'])
+                        result = tools.str_replace(tool_input['path'], tool_input['old_str'], tool_input['new_str'])
                     elif command == 'insert':
-                        result = insert(tool_input['path'], tool_input['insert_line'], tool_input['new_str'])
+                        result = tools.insert(tool_input['path'], tool_input['insert_line'], tool_input['new_str'])
                     elif command == 'undo_edit':
-                        result = undo_edit(tool_input['path'])
+                        result = tools.undo_edit(tool_input['path'])
                     message_history.append({"role": "user", "content": [{"type": "tool_result", "tool_use_id": message.id, "content": result}]})
                     print(result)
 
@@ -69,7 +69,7 @@ The landing page should include the following sections:
 - An about page
 
 Here's a list of the existing files in the project:
-{list_directory('website', 6)}
+{TextEditTools('website').list_directory('.', 6)}
 
 Review the existing files and create or update files as needed to implement the site.
 """
