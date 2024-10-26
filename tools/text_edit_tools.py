@@ -3,12 +3,18 @@ import os
 # Global state for file histories used in undo_edit
 file_histories = {}
 
+def _normalize_path(path):
+    if not path.startswith('work_dir'):
+        return os.path.join('work_dir', path.lstrip('/'))
+    return path
+
 def _is_path_allowed(path):
     work_dir = os.path.join(os.getcwd(), 'work_dir')
     abs_path = os.path.abspath(path)
     return abs_path.startswith(work_dir)
 
 def view(path, view_range=None, truncate_length=1000):
+    path = _normalize_path(path)
     if not _is_path_allowed(path):
         return "Error: Path must be within ./work_dir"
     if os.path.isfile(path):
@@ -35,6 +41,7 @@ def view(path, view_range=None, truncate_length=1000):
     return output
 
 def list_directory(path, depth):
+    path = _normalize_path(path)
     if not _is_path_allowed(path):
         return "Error: Path must be within ./work_dir"
     result = []
@@ -51,6 +58,7 @@ def list_directory(path, depth):
     return '\n'.join(result)
 
 def create(path, file_text):
+    path = _normalize_path(path)
     if not _is_path_allowed(path):
         return "Error: Path must be within ./work_dir"
     if os.path.exists(path):
@@ -66,6 +74,7 @@ def create(path, file_text):
         return f"File {path} created."
 
 def str_replace(path, old_str, new_str):
+    path = _normalize_path(path)
     if not _is_path_allowed(path):
         return "Error: Path must be within ./work_dir"
     if not os.path.isfile(path):
@@ -98,6 +107,7 @@ def str_replace(path, old_str, new_str):
         return f"Replaced old_str in {path}."
 
 def insert(path, insert_line, new_str):
+    path = _normalize_path(path)
     if not _is_path_allowed(path):
         return "Error: Path must be within ./work_dir"
     if not os.path.isfile(path):
@@ -121,6 +131,7 @@ def insert(path, insert_line, new_str):
     return f"Inserted new_str into {path} after line {insert_line}."
 
 def undo_edit(path):
+    path = _normalize_path(path)
     if not _is_path_allowed(path):
         return "Error: Path must be within ./work_dir"
     if path not in file_histories or len(file_histories[path]) == 0:
