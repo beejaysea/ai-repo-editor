@@ -7,8 +7,8 @@ load_dotenv()
 
 client = anthropic.Anthropic()
 
-def process_goal(input_goal):
-    files = list_directory('.', 6)
+def process_goal(input_goal, start_dir='.'):
+    files = list_directory(start_dir, 6)
     message_history = [{"role": "user", "content": input_goal}]
 
     done = False
@@ -69,9 +69,9 @@ The landing page should include the following sections:
 - An about page
 
 Here's a list of the existing files in the project:
-{list_directory('.', 6)}
+{list_directory('website', 6)}
 
 Review the existing files and create or update files as needed to implement the site.
 """
 
-process_goal(input_goal)
+process_goal(input_goal, 'website')
