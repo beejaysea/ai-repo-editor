@@ -60,24 +60,16 @@ def process_goal(input_goal, start_dir='.'):
             print(response.content[0].text)
             done = True
 
-repo_path='website'
+repo_path='blog_project'
 
-input_goal=f"""Our project is a brochure site for a boutique software development firm specializing in AI.
-The landing page should include the following sections:
-- A hero section with a title and a brief description of the company
-- A section with a list of services offered
-- A section with a list of projects completed
-- A contact form
-- A footer with contact information
-- A navigation bar with links to each section
-- A case studies page
-- A pricing page
-- An about page
+input_goal=f"""Our project is a simple blog with a home page and a few blog posts.
+Make sure we have 5 posts about different topics.
+
 
 Here's a list of the existing files in the project:
-{TextEditTools('website').list_directory('.', 6)}
+{TextEditTools(repo_path).list_directory('.', 6)}
 
 Review the existing files and create or update files as needed to implement the site.
 """
 
-process_goal(input_goal, 'website')
+process_goal(input_goal, repo_path)
