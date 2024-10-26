@@ -7,7 +7,7 @@ load_dotenv()
 
 client = anthropic.Anthropic()
 
-files = list_directory('.', 2)
+files = list_directory('.', 6)
 
 input_goal=f"""Generate a well-structured architecture for a new software project.
 The project is a web application that allows users to create and share documents.
@@ -23,7 +23,7 @@ message_history = [{"role": "user", "content": input_goal}]
 
 done = False
 while not done:
-    print(message_history)
+    # print(message_history)
     response = client.beta.messages.create(
         model="claude-3-5-sonnet-20241022",
         max_tokens=4095,

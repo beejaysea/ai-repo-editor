@@ -13,7 +13,7 @@ def _is_path_allowed(path):
     abs_path = os.path.abspath(path)
     return abs_path.startswith(work_dir)
 
-def view(path, view_range=None, truncate_length=1000):
+def view(path, view_range=None, truncate_length=None):
     path = _normalize_path(path)
     if not _is_path_allowed(path):
         return "Error: Path must be within ./work_dir"
