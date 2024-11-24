@@ -4,21 +4,23 @@ FROM python:3.9-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
-
-COPY tools/* /app/
-
-# Install any needed packages specified in requirements.txt
+# Copy requirements and install dependencies first
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install fastapi uvicorn
+# Copy the tools directory
+COPY tools /app/tools/
 
-# Make port 9191 available to the world outside this container
+# Create work_dir
+RUN mkdir -p /app/work_dir
+
+# Make port 9191 available
 EXPOSE 9191
 
-# Define environment variable
+# Set Python to run in verbose mode and unbuffered
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONVERBOSE=1
+ENV PYTHONPATH=/app
 
-# Run the application
-CMD ["uvicorn", "tools_service:app", "--host", "0.0.0.0", "--port", "9191"]
+# Set the command to run the server
+CMD ["python", "-m", "uvicorn", "tools.tools_service:app", "--host", "0.0.0.0", "--port", "9191", "--log-level", "debug"]

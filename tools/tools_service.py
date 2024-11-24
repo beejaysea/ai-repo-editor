@@ -1,6 +1,7 @@
+import os
 from fastapi import FastAPI, HTTPException, Depends, Path
 from pydantic import BaseModel
-from text_edit_tools import TextEditTools
+from tools.text_edit_tools import TextEditTools
 import logging
 from typing import Optional, List, Dict, Any
 from pathlib import Path as FilePath
@@ -59,12 +60,10 @@ class TextEditToolsFactory:
 
     def get_tools(self, directory: str) -> TextEditTools:
         if directory not in self._instances:
-            # Validate directory exists
-            dir_path = FilePath(directory)
-            if not dir_path.exists() or not dir_path.is_dir():
-                raise HTTPException(
-                    status_code=400, detail=f"Invalid directory: {directory}"
-                )
+            # Prepend work_dir to the directory path
+            work_dir_path = f"./work_dir/{directory}"
+            if not os.path.exists(work_dir_path):
+                os.makedirs(work_dir_path)
             self._instances[directory] = TextEditTools(directory=directory)
         return self._instances[directory]
 
@@ -92,7 +91,9 @@ async def view(
 ) -> Dict[str, Any]:
     try:
         logger.info(f"Viewing file {request.path} in directory {directory}")
-        return tools.view(request.path, request.view_range, request.truncate_length)
+        return {
+            "file": tools.view(request.path, request.view_range, request.truncate_length)
+        }
     except Exception as e:
         logger.error(f"Error viewing file: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -167,10 +168,19 @@ async def execute_bash_command(
     directory: str, request: BashCommandRequest
 ) -> Dict[str, Any]:
     try:
-        logger.info(f"Executing command '{request.command}' in directory {directory}")
+        # Prepend work_dir to the directory path for bash commands
+        work_dir_path = f"./work_dir/{directory}"
+        if not os.path.exists(work_dir_path):
+            os.makedirs(work_dir_path)
+        logger.info(f"Executing command '{request.command}' in directory {work_dir_path}")
+        # Our command may contain a path. `/repo` should map to ./work_dir/{directory}
+        # let's transform it first
+        request.command = request.command.replace("/repo", work_dir_path)
         result = subprocess.run(
-            request.command, shell=True, cwd=directory, capture_output=True, text=True
+            request.command, shell=True, cwd="/app", capture_output=True, text=True
         )
+        # and the reverse transformation for the output
+        result.stdout = result.stdout.replace(work_dir_path, "/repo")
         return {
             "stdout": result.stdout,
             "stderr": result.stderr,

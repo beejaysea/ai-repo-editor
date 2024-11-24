@@ -86,7 +86,7 @@ def process_goal(input_goal, start_dir='.'):
 def main():
     config_path = sys.argv[1] if len(sys.argv) > 1 else 'config.yaml'
     
-    with open(config_path, 'r') as f:
+    with open("yamls/" + config_path, 'r') as f:
         config = yaml.safe_load(f)
 
     repo_path = config['repo_path']

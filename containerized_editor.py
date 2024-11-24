@@ -17,7 +17,7 @@ def call_tools_service(endpoint, directory, payload):
     url = f"{TOOLS_SERVICE_URL}/{directory}/{endpoint}"
     response = requests.post(url, json=payload)
     response.raise_for_status()
-    return response.json()
+    return str(response)
 
 def process_goal(input_goal, start_dir="."):
     system_prompt = open("system_prompt.txt", "r").read()
@@ -59,7 +59,6 @@ def process_goal(input_goal, start_dir="."):
             for message in messages:
                 if isinstance(message, BetaTextBlock):
                     content.append({"type": "text", "text": message.text})
-                    print(message.text)
                 if isinstance(message, BetaToolUseBlock):
                     tool_input = message.input
                     content.append(
@@ -71,20 +70,26 @@ def process_goal(input_goal, start_dir="."):
                         }
                     )
                     message_history.append({"role": "assistant", "content": content})
+                    print(message.name)
                     try:
-                        if message.name == "file_delete":
-                            result = call_tools_service("delete", start_dir, tool_input)
-                        elif message.name == "view":
-                            result = call_tools_service("view", start_dir, tool_input)
-                        elif message.name == "create":
-                            result = call_tools_service("create", start_dir, tool_input)
-                        elif message.name == "str_replace":
-                            result = call_tools_service("str_replace", start_dir, tool_input)
-                        elif message.name == "insert":
-                            result = call_tools_service("insert", start_dir, tool_input)
-                        elif message.name == "undo_edit":
-                            result = call_tools_service("undo_edit", start_dir, tool_input)
+                        if message.name=='str_replace_editor':
+                            # look for the sub command in 'command' in tool_input
+                            command = tool_input['command']
+                            print(f"> {command} {tool_input['path']}")
+                            if command == "file_delete":
+                                result = call_tools_service("delete", start_dir, tool_input)
+                            elif command == "view":
+                                result = call_tools_service("view", start_dir, tool_input)
+                            elif command == "create":
+                                result = call_tools_service("create", start_dir, tool_input)
+                            elif command == "str_replace":
+                                result = call_tools_service("str_replace", start_dir, tool_input)
+                            elif command == "insert":
+                                result = call_tools_service("insert", start_dir, tool_input)
+                            elif command == "undo_edit":
+                                result = call_tools_service("undo_edit", start_dir, tool_input)
                         elif message.name == "bash":
+                            print(f"> {tool_input['command']}")
                             result = call_tools_service("bash", start_dir, tool_input)
                         message_history.append(
                             {
@@ -98,7 +103,6 @@ def process_goal(input_goal, start_dir="."):
                                 ],
                             }
                         )
-                        print(result)
                     except requests.HTTPError as e:
                         print(f"HTTP error occurred: {e}")
                     except Exception as e:
@@ -116,7 +120,7 @@ def process_goal(input_goal, start_dir="."):
 def main():
     config_path = sys.argv[1] if len(sys.argv) > 1 else "config.yaml"
 
-    with open(config_path, "r") as f:
+    with open("yamls/" + config_path, "r") as f:
         config = yaml.safe_load(f)
 
     repo_path = config["repo_path"]
