@@ -1,3 +1,7 @@
 anthropic
 python-dotenv
 pyyaml
+fastapi
+uvicorn
+typing
+pathlib

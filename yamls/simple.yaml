@@ -1,0 +1,4 @@
+repo_path: simple_project
+input_goal: |
+  Generate a simple html, css, and js landing page for a podcast.
+include_files: true
