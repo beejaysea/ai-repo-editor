@@ -1,0 +1,8 @@
+repo_path: yfinance_project
+input_goal: |
+  Write a script that fetches the stock prices of MSFT, AAPL, and GOOGL from Yahoo Finance.
+  Get their closing prices for the last 5 days.
+  Get their Options chains.
+  Make a judgement on future price.
+  When done, run the code and show the output.
+include_files: true

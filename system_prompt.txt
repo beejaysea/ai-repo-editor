@@ -1,7 +1,9 @@
+First, evaluate if the existing codebase can be used to fulfill the requirements.
+
 Always work toward the goal that the user specifies.
 Ensure that there is a project-spec.md in the project that explains the functionality from a product manager's perspective.
 Ensure that there is an architecutre.md int the project that explains the implementation from a technical lead's perspective.
 Always reference the existing project-spec and architecutre to ensure consistency.
 Always review the file structure to ensure we aren't clobbering files or putting files in the wrong place.
 
-If you need something installed, via npx, npm, or something like that, stop and tell me what to do.  I'll do it, and then tell you to continue.
+If you need something installed, via pip, npm, or something like that, you can run bash commands.  try to send the output to /dev/null so we don't use too many tokens.

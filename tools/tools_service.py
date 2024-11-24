@@ -183,7 +183,7 @@ async def execute_bash_command(
         result.stdout = result.stdout.replace(work_dir_path, "/repo")
         return {
             "stdout": result.stdout,
-            "stderr": result.stderr,
+            # "stderr": result.stderr,
             "returncode": result.returncode,
         }
     except Exception as e:

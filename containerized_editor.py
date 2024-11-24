@@ -17,7 +17,7 @@ def call_tools_service(endpoint, directory, payload):
     url = f"{TOOLS_SERVICE_URL}/{directory}/{endpoint}"
     response = requests.post(url, json=payload)
     response.raise_for_status()
-    return str(response)
+    return response.text
 
 def process_goal(input_goal, start_dir="."):
     system_prompt = open("system_prompt.txt", "r").read()
@@ -72,13 +72,15 @@ def process_goal(input_goal, start_dir="."):
                     message_history.append({"role": "assistant", "content": content})
                     print(message.name)
                     try:
+                        if message.name == "file_delete":
+                            command = tool_input['command']
+                            print(f"> {command} {tool_input['path']}")
+                            result = call_tools_service("delete", start_dir, tool_input)
                         if message.name=='str_replace_editor':
                             # look for the sub command in 'command' in tool_input
                             command = tool_input['command']
                             print(f"> {command} {tool_input['path']}")
-                            if command == "file_delete":
-                                result = call_tools_service("delete", start_dir, tool_input)
-                            elif command == "view":
+                            if command == "view":
                                 result = call_tools_service("view", start_dir, tool_input)
                             elif command == "create":
                                 result = call_tools_service("create", start_dir, tool_input)
@@ -88,7 +90,7 @@ def process_goal(input_goal, start_dir="."):
                                 result = call_tools_service("insert", start_dir, tool_input)
                             elif command == "undo_edit":
                                 result = call_tools_service("undo_edit", start_dir, tool_input)
-                        elif message.name == "bash":
+                        if message.name == "bash":
                             print(f"> {tool_input['command']}")
                             result = call_tools_service("bash", start_dir, tool_input)
                         message_history.append(
@@ -132,10 +134,11 @@ def main():
 Here's a list of the existing files in the project:
 {call_tools_service('list_directory', repo_path, {'path': '.', 'depth': 6})}
 
-Review the existing files and create or update files as needed to implement the site.
+Review the existing files and create or update files as needed to execute the goal.
 """
-    # chat loop
-    process_goal(input_goal, repo_path)
+    # if we have an arg that says --cli, skip the first process_goal call
+    if "--cli" not in sys.argv:
+        process_goal(input_goal, repo_path)
     user_quit = False
     while not user_quit:
         user_input = input("> ")
